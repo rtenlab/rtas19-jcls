@@ -16,10 +16,10 @@
 
 
 // DEBUG SETTING
-#define DEBUG_MAIN 0
-#define DEBUG_WCRT 0
-#define DEBUG_SCHED 0
-#define DEBUG_PRIORITY 0
+//#define DEBUG_MAIN
+//#define DEBUG_WCRT
+//#define DEBUG_SCHED
+//#define DEBUG_PRIORITY
 
 int num_tasksets;
 unsigned int *num_tasks;

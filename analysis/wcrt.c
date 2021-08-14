@@ -1,6 +1,5 @@
 #include "jcls.h"
 
-//unsigned int *num_tasks;
 int num_classes;
 
 // Sort ascending order of tasks by period
@@ -185,7 +184,7 @@ int assign_hst_priority(struct task *tasks, unsigned int num_tasks) {
 		}
 	}
 
-	#if(DEBUG_PRIORITY)
+	#ifdef DEBUG_PRIORITY
 		for (i = 0; i < num_tasks; i++) {
 			for (j = 0; j < tasks[i].m+1; j++) {
 				printf("Priority of job %d of task %d is %d\n", j, i, tasks[i].priorities[j]); 
@@ -284,7 +283,7 @@ int assign_hst_priority_w(struct task *tasks, unsigned int num_tasks) {
 		}
 	}
 
-	#if(DEBUG_PRIORITY)
+	#ifdef DEBUG_PRIORITY
 		for (i = 0; i < num_tasks; i++) {
 			for (j = 0; j < tasks[i].m+1; j++) {
 				printf("Priority of job %d of task %d is %d\n", j, i, tasks[i].priorities[j]); 
@@ -326,12 +325,6 @@ int assign_hst_priority_v(struct task *tasks, unsigned int num_tasks) {
 
 	// Sort tasks by period
 	qsort(task_period, num_tasks, sizeof(task_period[0]), sort_ascend);
-	
-	// Sort tasks by miss threshold window
-	//qsort(m_threshold, num_tasks, sizeof(m_threshold[0]), sort_miss_ascend);
-	/*for (i = 0; i < num_tasks; i++) {
-		printf("m_threshold (sorted) : %d\n", m_threshold[i].index);
-	}*/
 
 
 	// Check RM schedulability of tasks
@@ -371,17 +364,12 @@ int assign_hst_priority_v(struct task *tasks, unsigned int num_tasks) {
 				int pri_flag = 0;
 				for (j = 0; j < tasks[i].v; j++) {
 					if (c_index[i] < (tasks[i].m+1)) {
-						//tasks[i].priorities[c_index[i]] = c_priority;
 						if (j != 0) {
 							tasks[i].priorities[c_index[i]] = tasks[i].priorities[c_index[i]-1];
 						}
 						c_index[i] += 1;
-						//pri_flag = 1;
 					}
 				}
-
-				//if (pri_flag == 1)
-				//c_priority -= 1;
 			}
 
 			flag = 0;
@@ -455,14 +443,6 @@ int WFD_allocation(struct task *tasks, unsigned int num_tsks, unsigned int max_b
 
 			if (assigned != 1) {
 				unsched = 1;
-				/*
-				unsigned int index = bin[max_bin-1].index;
-				bin[max_bin-1].value = bin[max_bin-1].value - tasks[i].min_utilization;
-				for (int k = 0; k < tasks[i].m+1; k++)
-					tasks[i].cpu[k] = index+1;
-			
-				assigned = 1;
-				*/
 			}
 		}
 
@@ -526,14 +506,6 @@ int WFD_allocation_U(struct task *tasks, unsigned int num_tsks, unsigned int max
 
 			if (assigned != 1) {
 				unsched = 1;
-				/*
-				unsigned int index = bin[max_bin-1].index;
-				bin[max_bin-1].value = bin[max_bin-1].value - tasks[i].utilization;
-				for (int k = 0; k < tasks[i].m+1; k++)
-					tasks[i].cpu[k] = index+1;
-			
-				assigned = 1;
-				*/
 			}
 		}
 
@@ -547,24 +519,16 @@ int WFD_allocation_U(struct task *tasks, unsigned int num_tsks, unsigned int max
 	}*/
 	return unsched;
 }
-/*
+
 int Job_allocation(struct task *tasks, unsigned int num_tsks, unsigned int max_bin) {
 	int i, j, tmp_idx = 0, max_j = 0, max_c = 0;
 	unsigned int *job_cls_tid, *job_cls_idx;
 	struct priority_descend *job_priority;
 	int assigned, task_id, job_class_id, prev_priority, prev_cpu, unsched = 0;
-	int **cpu;
 
 	job_cls_tid = malloc(sizeof(unsigned int)*num_classes);
 	job_cls_idx = malloc(sizeof(unsigned int)*num_classes);
 	job_priority = malloc(sizeof(struct priority_descend)*num_classes);
-	cpu = (int **)malloc(sizeof(int)*max_bin);
-	for(i = 0; i < max_bin; i++) {
-		cpu[i] = (int *)malloc(sizeof(int)*num_tsks);
-		for (int j = 0; j < num_tsks; j++)
-			cpu[i][j] = 0;
-	}
-
 
 	for (i = 0; i < num_tsks; i++) {
 		if ((tasks[i].m+1) > max_j)
@@ -581,126 +545,9 @@ int Job_allocation(struct task *tasks, unsigned int num_tsks, unsigned int max_b
 
 	//sort_job_priority_des(job_cls_priority, order_idx);
 	qsort(job_priority, num_classes, sizeof(job_priority[0]), sort_descend);
-
-	
-	float bin[max_bin];
-	for (int i = 0; i < max_bin; i++) {
-		bin[i] = 1.0;
-	}
-
-	//prev_priority = 0; prev_cpu = 0;
-	for (i = 0; i < num_classes; i++) {
-		assigned = 0;
-		task_id = job_cls_tid[job_priority[i].index];
-		job_class_id = job_cls_idx[job_priority[i].index];
-
-
-		if (assigned == 0) {
-			for (int j = 0; j < max_bin; j++) {
-				tasks[task_id].cpu[job_class_id] = j+1;
-				WCRT_CLASS(tasks, task_id, job_class_id, num_tsks);
-
-				if (tasks[task_id].WCRT[job_class_id] <= tasks[task_id].T) {
-					cpu[j][task_id] = 1;
-					assigned = 1;
-//					prev_cpu = j+1;
-					break;
-				}
-				tasks[task_id].cpu[job_class_id] = 0;
-				tasks[task_id].WCRT[job_class_id] = 0.0;
-			}
-
-			if (assigned == 0) {
-				for (int j = 0; j < max_bin; j++) {
-					
-					float tmp_util = 0.0; bin[j] = 1.0;
-					for (int k = 0; k < num_tsks; k++) {
-						for (int n = 0; n < tasks[k].m+1; n++) {
-							if (tasks[k].cpu[n] == j+1) {
-								bin[j] -= tasks[k].min_utilization;
-								break;
-							}								
-						}
-					}
-					
-
-					if (cpu[j][task_id] == 1 || (cpu[j][task_id] == 0 && (bin[j]-tasks[task_id].min_utilization >= 0))) {
-						cpu[j][task_id] = 1;
-						tasks[task_id].cpu[job_class_id] = j+1;
-						assigned = 1;
-//						prev_cpu = j+1;
-						break;
-					}
-				}
-			}
-
-			if (assigned == 0) {
-				float tmp_bin = -1.0;
-				int tmp_cpu = 0;
-				for (int k = 0; k < max_bin; k++) {
-					if (bin[k] > tmp_bin) {
-						tmp_bin = bin[k];
-						tmp_cpu = k + 1;
-					}						
-				}
-				tasks[task_id].cpu[job_class_id] = tmp_cpu;
-				//unsched = 1;
-				printf("Unschedulable taskset!!!\n");
-			}
-		}
-//		prev_priority = tasks[task_id].priorities[job_class_id];
-		//printf("CPU of job-class %d of task %d is %d\n", job_class_id, task_id, tasks[task_id].cpu[job_class_id]);
-	}
-
-	for (int i = 0; i < max_bin; i++)
-		free(cpu[i]);
-	free(cpu);
-	free(job_cls_tid);
-	free(job_cls_idx);
-	free(job_priority);
-
-	return unsched;
-}
-*/
-int Job_allocation(struct task *tasks, unsigned int num_tsks, unsigned int max_bin) {
-	int i, j, tmp_idx = 0, max_j = 0, max_c = 0;
-	unsigned int *job_cls_tid, *job_cls_idx;
-	struct priority_descend *job_priority;
-	int assigned, task_id, job_class_id, prev_priority, prev_cpu, unsched = 0;
-	//int **cpu;
-
-	job_cls_tid = malloc(sizeof(unsigned int)*num_classes);
-	job_cls_idx = malloc(sizeof(unsigned int)*num_classes);
-	job_priority = malloc(sizeof(struct priority_descend)*num_classes);
-	/*
-	cpu = (int **)malloc(sizeof(int)*max_bin);
-	for(i = 0; i < max_bin; i++) {
-		cpu[i] = (int *)malloc(sizeof(int)*num_tsks);
-		for (int j = 0; j < num_tsks; j++)
-			cpu[i][j] = 0;
-	}
-	*/
-
-	for (i = 0; i < num_tsks; i++) {
-		if ((tasks[i].m+1) > max_j)
-			max_j = tasks[i].m + 1;
-
-		for (j = 0; j < tasks[i].m+1; j++) {
-			job_priority[tmp_idx].priority = tasks[i].priorities[j];
-			job_priority[tmp_idx].index = tmp_idx;
-			job_cls_tid[tmp_idx] = i;
-			job_cls_idx[tmp_idx] = j;
-			tmp_idx++;
-		}
-	}
-
-	//sort_job_priority_des(job_cls_priority, order_idx);
-	qsort(job_priority, num_classes, sizeof(job_priority[0]), sort_descend);
-
 	
 	float U_p[max_bin];
 
-	//prev_priority = 0; prev_cpu = 0;
 	for (i = 0; i < num_classes; i++) {
 		assigned = 0;
 		task_id = job_cls_tid[job_priority[i].index];
@@ -719,8 +566,6 @@ int Job_allocation(struct task *tasks, unsigned int num_tsks, unsigned int max_b
 					else
 						tasks[task_id].eta[job_class_id] = tasks[task_id].T;
 
-
-					//cpu[j][task_id] = 1;
 					assigned = 1;
 					break;
 				}
@@ -750,14 +595,7 @@ int Job_allocation(struct task *tasks, unsigned int num_tsks, unsigned int max_b
 
 			
 		}
-//		prev_priority = tasks[task_id].priorities[job_class_id];
-		//printf("CPU of job-class %d of task %d is %d\n", job_class_id, task_id, tasks[task_id].cpu[job_class_id]);
 	}
-/*
-	for (int i = 0; i < max_bin; i++)
-		free(cpu[i]);
-	free(cpu);
-*/
 	free(job_cls_tid);
 	free(job_cls_idx);
 	free(job_priority);
@@ -767,7 +605,7 @@ int Job_allocation(struct task *tasks, unsigned int num_tsks, unsigned int max_b
 
 
 void WCRT_RM(struct task *tasks, struct task_rspt *resp_time, unsigned int num_tasks) {
-	#if(DEBUG_WCRT)
+	#ifdef DEBUG_WCRT
 		printf("Start of WCRT_RM\n");
 	#endif
 
@@ -800,18 +638,18 @@ void WCRT_RM(struct task *tasks, struct task_rspt *resp_time, unsigned int num_t
 			}
 			
 		}
-		#if(DEBUG_WCRT)
+		#ifdef DEBUG_WCRT
 			printf("WCRT_RM response time of task %d is %Lf\n", i, resp_time[i].rspt);
 		#endif
 	}
 
-	#if(DEBUG_WCRT)
+	#ifdef DEBUG_WCRT
 		printf("End of RM\n");
 	#endif
 }
 
 void WCRT(struct task *tasks, unsigned int num_tasks) {
-	#if(DEBUG_WCRT)
+	#ifdef DEBUG_WCRT
 		printf("Start of WCRT\n");
 	#endif
 
@@ -843,7 +681,7 @@ void WCRT(struct task *tasks, unsigned int num_tasks) {
 		WCRT_CLASS(tasks, job_cls_tid[job_priority[i].index], job_cls_idx[job_priority[i].index], num_tasks);
 	}
 
-	#if(DEBUG_WCRT)
+	#ifdef DEBUG_WCRT
 		for (i=0; i<num_classes; i++) {
 			printf("Ordered job class priority is %d\n", job_cls_priority[i]);
 			printf("Ordered class index is %d\n", order_idx[i]);
@@ -856,7 +694,7 @@ void WCRT(struct task *tasks, unsigned int num_tasks) {
 }
 
 void WCRT_CLASS(struct task *tasks, unsigned int tid, unsigned int idx, unsigned int num_tasks) {
-	#if(DEBUG_WCRT)
+	#ifdef DEBUG_WCRT
 		printf("Start of WCRT CLASS\n");
 	#endif
 

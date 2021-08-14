@@ -4,19 +4,9 @@ function [ sets, util_M, util_m, valid ] = Generate_Taskset( num, t_range, k_ran
     % T / C / D / m / k / offset / sporadic / jitter
     sets = zeros(num, 5);
     
-%     T = (t_range(2)-t_range(1)).*round(rand([1 num]), 1)+t_range(1);
     T = randi(t_range, num, 1);
     sets(:, 1) = T';
     sets(:, 3) = T';
-    
-    % Limit task utilization
-%     flag = 1;
-%     while flag
-%         util_per = UUniFast(num, util);
-%         if util_per < 0.5
-%             break;
-%         end
-%     end
     
     util_per = UUniFast(num, util);
     valid = true;
@@ -33,10 +23,6 @@ function [ sets, util_M, util_m, valid ] = Generate_Taskset( num, t_range, k_ran
         if mode ~= 1
             sets(i, 5) = randi(k_range, 1, 1);
             sets(i, 4) = randi([1 k_range(1)-1], 1, 1);
-%             sets(i, 4) = randi([1 2], 1, 1);
-%             sets(i, 4) = randi([1 ceil(sets(i,5)*0.5)], 1, 1);
-%             sets(i, 5) = 2;
-%             sets(i, 4) = 1;
         else
             sets(i, 5) = K;
             sets(i, 4) = M;

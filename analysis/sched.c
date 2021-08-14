@@ -74,7 +74,7 @@ int schedulability (struct task *tasks, unsigned int num_tasks) {
 			
 			// Check the ratio of m/K and condition
 			if ((M/((double)K)) <= 0.5 && CLS[0] == 1) {
-				#if(DEBUG_SCHED)
+				#ifdef DEBUG_SCHED
 					printf("M is %d, K is %d\n", M, K);
 					printf("M/K ratio is %lf\n", (M/((double)K)));
 					printf("m/K ratio is less than 0.5.\n");
@@ -171,7 +171,7 @@ int schedulability (struct task *tasks, unsigned int num_tasks) {
 				}
 			}
 			
-			#if(DEBUG_SCHED)
+			#ifdef DEBUG_SCHED
 				if (i == 0 && n == 0) {
 					for (int b = 0; b < node.seq_idx; b++)
 						printf("Node seq is %s\n", node.seq[b]);	
@@ -179,7 +179,7 @@ int schedulability (struct task *tasks, unsigned int num_tasks) {
 			#endif
 			
 			size_list = find_index(node.W, node.W_idx, list, tasks[i].K-1);
-			#if(DEBUG_SCHED)
+			#ifdef DEBUG_SCHED
 				printf("size_list is %d\n", size_list);
 			#endif
 			for (y = 0; y < size_list; y++) {
@@ -187,7 +187,7 @@ int schedulability (struct task *tasks, unsigned int num_tasks) {
 				if (m_count < tasks[i].m) {
 					//printf("Error check point 1\n");
 					// unschedulable
-					#if(DEBUG_SCHED)				
+					#ifdef DEBUG_SCHED			
 						for(i = 0; i < MAX_CLS_SIZE; i++) {
 							free(node.seq[i]);
 						}

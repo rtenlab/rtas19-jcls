@@ -2,9 +2,9 @@
 
 int main(int argc, char *argv[]) {
 
-	if (argc < 5) {
-		printf("Usage: ./check_sched filename # of tasksets Util range \n");
-		printf("Example: ./check_sched sample.txt 1000 11 sample_num.txt\n");
+	if (argc < 6) {
+		printf("Usage: ./check_sched filename num_of_tasksets num_util_range filename_num.txt num_cpu \n");
+		printf("Example: ./check_sched data_40.txt 1000 11 data_40_num.txt 1\n");
 		return -1;
 	}
 
@@ -14,14 +14,13 @@ int main(int argc, char *argv[]) {
 	char wr_dir[64] = "../data/";
 	char num_dir[64] = "../data/";
 	char *fname = argv[1];
-	//num_tasks = atoi(argv[2]);
 	num_tasksets = atoi(argv[2]);
-	int util_range =atoi(argv[3]);
+	int util_range = atoi(argv[3]);
 	char *fname_num = argv[4];
 	unsigned int num_cpu = atoi(argv[5]);
 	num_classes = 0;
 	
-	printf("File name is %s\n", fname_num);
+	printf("File name is %s\n", fname);
 
 	struct task *tasks;
 	long double **data;
@@ -65,7 +64,6 @@ int main(int argc, char *argv[]) {
 		// Assign number of tasks in a taskset
 		for (i = 0; i < num_tasksets; i++) {
 			fscanf(fp_tasknum, "%d", &num_tasks[i]);
-			//printf("Number of tasks is %d\n", num_tasks[i]);
 		}
 
 		for (k = 0; k < num_tasksets; k++) {
@@ -95,7 +93,7 @@ int main(int argc, char *argv[]) {
 		    // Initialize tasksets
 		    for(i = 0; i < num_tasks[k]; i++) {
 				initialize_task(&tasks[i], data[i][1], data[i][0], data[i][3], data[i][4], data[i][7]);
-				#if(DEBUG_MAIN)
+				#ifdef DEBUG_MAIN
 			    	printf("C: %Lf, T: %Lf, m: %d, K: %d\n", tasks[i].C, tasks[i].T, tasks[i].m, tasks[i].K);
 		    	#endif
 				//printf("C: %Lf, T: %Lf, m: %d, K: %d, v: %d\n", tasks[i].C, tasks[i].T, tasks[i].m, tasks[i].K, tasks[i].v);
@@ -104,7 +102,7 @@ int main(int argc, char *argv[]) {
 		    
 		    // Assign heuristic priorities
 			re = assign_hst_priority_v(tasks, num_tasks[k]);
-			#if(DEBUG_PRIORITY)
+			#ifdef DEBUG_PRIORITY
 				for(i = 0; i < num_tasks[k]; i++) {
 					for(j = 0; j < tasks[i].m+1; j++) {
 						printf("Priority of job %d of task %d is %d\n", j, i, tasks[i].priorities[j]);
@@ -122,7 +120,7 @@ int main(int argc, char *argv[]) {
 				// Calculate WCRT
 				WCRT(tasks, num_tasks[k]);
 				
-				#if(DEBUG_MAIN)
+				#ifdef DEBUG_MAIN
 					for (i = 0; i < num_tasks[k]; i++) {
 						for (j = 0; j < tasks[i].m+1; j++) {
 							printf("WCRT of job %d of task %d is %Lf\n", j, i, tasks[i].WCRT[j]);
@@ -131,12 +129,12 @@ int main(int argc, char *argv[]) {
 				#endif
 				
 				if (schedulability(tasks, num_tasks[k])) {
-					#if(DEBUG_MAIN)
+					#ifdef DEBUG_MAIN
 						printf("Taskset %d is schedulable.\n", k);
 					#endif
 					sched_cnt++;
 				} else {
-					#if(DEBUG_MAIN)
+					#ifdef DEBUG_MAIN
 						printf("Taskset %d is not schedulable.\n", k);
 					#endif			
 				}
