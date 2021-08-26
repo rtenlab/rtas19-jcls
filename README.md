@@ -45,6 +45,19 @@
   year={2019},
   organization={IEEE}
 }
+
+@article{choi2021toward,
+  title={Toward Practical Weakly Hard Real-Time Systems: A Job-Class-Level Scheduling Approach},
+  author={Choi, Hyunjong and Kim, Hyoseung and Zhu, Qi},
+  journal={IEEE Internet of Things Journal},
+  volume={8},
+  number={8},
+  pages={6692--6708},
+  year={2021},
+  publisher={IEEE}
+}
+
+
 ```
 
   
